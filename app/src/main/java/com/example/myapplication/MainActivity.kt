@@ -6,6 +6,9 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -74,11 +77,21 @@ fun MessageCard(message: Message) {
                 shape = MaterialTheme.shapes.medium,
                 elevation = 1.dp,
                 color = surfaceColor,
-                modifier = Modifier.animateContentSize().padding(1.dp)
+                modifier = Modifier
+                    .animateContentSize(
+                        animationSpec = spring(
+                            dampingRatio = Spring.DampingRatioHighBouncy,
+                            stiffness = Spring.StiffnessHigh
+                        )
+                    )
+                    .padding(1.dp)
             ) {
+                val padding by animateDpAsState(
+                    if (isExpanded) 16.dp else 4.dp,
+                )
                 Text(
                     message.body,
-                    modifier = Modifier.padding(all = 4.dp),
+                    modifier = Modifier.padding(all = padding),
                     style = MaterialTheme.typography.body2,
                     maxLines = if (isExpanded) Int.MAX_VALUE else 1,
                 )
@@ -89,9 +102,14 @@ fun MessageCard(message: Message) {
 
 @Composable
 fun Conversation(messages: List<Message>) {
-    LazyColumn {
-        items(messages) { message ->
-            MessageCard(message)
+    Column {
+        Surface(color = MaterialTheme.colors.primary) {
+            Text(text = "Hello, Android", modifier = Modifier.padding(all = 24.dp))
+        }
+        LazyColumn {
+            items(messages) { message ->
+                MessageCard(message)
+            }
         }
     }
 }
